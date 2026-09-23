@@ -1,5 +1,18 @@
 export const ORIGIN = "BLR";
-export const DESTINATION = "PAT";
+
+export type Destination = {
+  code: string;
+  name: string;
+};
+
+/** Destinations to check each cron run (same origin / date window / max price). */
+export const DESTINATIONS: Destination[] = [
+  { code: "DEL", name: "New Delhi (IGI)" },
+  { code: "HDO", name: "Ghaziabad (Hindon)" },
+  { code: "JAI", name: "Jaipur" },
+  { code: "AGR", name: "Agra" },
+  { code: "GWL", name: "Gwalior" },
+];
 
 /** Inclusive departure date range (YYYY-MM-DD). Edit for your trip window. */
 export const DEPART_DATE_START = "2026-10-01";

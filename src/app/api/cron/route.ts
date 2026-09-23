@@ -3,7 +3,7 @@ import {
   CURRENCY,
   DEPART_DATE_END,
   DEPART_DATE_START,
-  DESTINATION,
+  DESTINATIONS,
   MAX_PRICE,
   ORIGIN,
 } from "@/lib/config";
@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      route: `${ORIGIN}→${DESTINATION}`,
+      origin: ORIGIN,
+      destinations: DESTINATIONS,
       dateRange: { start: DEPART_DATE_START, end: DEPART_DATE_END },
       maxPrice: MAX_PRICE,
       currency: CURRENCY,

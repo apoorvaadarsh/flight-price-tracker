@@ -2,13 +2,16 @@ import {
   CURRENCY,
   DEPART_DATE_END,
   DEPART_DATE_START,
-  DESTINATION,
+  DESTINATIONS,
   getDepartureDates,
   MAX_PRICE,
   ORIGIN,
+  type Destination,
 } from "./config";
 
 export type FlightMatch = {
+  destination: string;
+  destinationName: string;
   date: string;
   price: number;
   currency: string;
@@ -51,8 +54,11 @@ function normalizeDepDate(depDate: string): string {
   throw new Error(`Unexpected DepDate format: ${depDate}`);
 }
 
-async function fetchFareCalendar(anchorIsoDate: string): Promise<FareCalendarRow[]> {
-  const calKey = `${ORIGIN}_${DESTINATION}_${toCalKeyDate(anchorIsoDate)}`;
+async function fetchFareCalendar(
+  destination: string,
+  anchorIsoDate: string,
+): Promise<FareCalendarRow[]> {
+  const calKey = `${ORIGIN}_${destination}_${toCalKeyDate(anchorIsoDate)}`;
 
   const response = await fetch(FARE_CALENDAR_URL, {
     method: "POST",
@@ -81,6 +87,7 @@ async function fetchFareCalendar(anchorIsoDate: string): Promise<FareCalendarRow
 }
 
 function rowToMatch(
+  dest: Destination,
   row: FareCalendarRow,
   allowedDates: Set<string>,
 ): FlightMatch | null {
@@ -101,6 +108,8 @@ function rowToMatch(
   }
 
   return {
+    destination: dest.code,
+    destinationName: dest.name,
     date,
     price,
     currency: CURRENCY,
@@ -118,11 +127,14 @@ function addDays(isoDate: string, deltaDays: number): string {
 }
 
 /**
- * Fetch cheap-day fares covering [DEPART_DATE_START, DEPART_DATE_END].
+ * Fetch cheap-day fares for one destination covering
+ * [DEPART_DATE_START, DEPART_DATE_END].
  * Each FareCalendar call returns roughly anchor−4 … anchor+24; we walk
  * uncovered dates using the earliest uncovered date as the next anchor.
  */
-export async function findMatches(): Promise<FlightMatch[]> {
+async function findMatchesForDestination(
+  dest: Destination,
+): Promise<FlightMatch[]> {
   const allowedDates = new Set(getDepartureDates());
   const uncovered = new Set(allowedDates);
   const byDate = new Map<string, FlightMatch>();
@@ -133,9 +145,9 @@ export async function findMatches(): Promise<FlightMatch[]> {
     const windowEnd = addDays(anchor, 24);
 
     try {
-      const rows = await fetchFareCalendar(anchor);
+      const rows = await fetchFareCalendar(dest.code, anchor);
       for (const row of rows) {
-        const match = rowToMatch(row, allowedDates);
+        const match = rowToMatch(dest, row, allowedDates);
         if (match) {
           const existing = byDate.get(match.date);
           if (!existing || match.price < existing.price) {
@@ -144,7 +156,10 @@ export async function findMatches(): Promise<FlightMatch[]> {
         }
       }
     } catch (error) {
-      console.error(`Skipping FareCalendar anchor ${anchor}:`, error);
+      console.error(
+        `Skipping FareCalendar ${ORIGIN}→${dest.code} anchor ${anchor}:`,
+        error,
+      );
       uncovered.delete(anchor);
       continue;
     }
@@ -162,4 +177,21 @@ export async function findMatches(): Promise<FlightMatch[]> {
   );
   matches.sort((a, b) => a.price - b.price);
   return matches;
+}
+
+/** Fetch matches across all configured destinations. */
+export async function findMatches(): Promise<FlightMatch[]> {
+  const all: FlightMatch[] = [];
+
+  for (const dest of DESTINATIONS) {
+    try {
+      const matches = await findMatchesForDestination(dest);
+      all.push(...matches);
+    } catch (error) {
+      console.error(`Skipping destination ${dest.code}:`, error);
+    }
+  }
+
+  all.sort((a, b) => a.price - b.price || a.date.localeCompare(b.date));
+  return all;
 }

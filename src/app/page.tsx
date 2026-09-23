@@ -2,12 +2,14 @@ import {
   CURRENCY,
   DEPART_DATE_END,
   DEPART_DATE_START,
-  DESTINATION,
+  DESTINATIONS,
   MAX_PRICE,
   ORIGIN,
 } from "@/lib/config";
 
 export default function Home() {
+  const destLabel = DESTINATIONS.map((d) => `${d.code} (${d.name})`).join(", ");
+
   return (
     <div className="flex min-h-full flex-col items-center justify-center bg-zinc-50 px-6 py-16 font-sans dark:bg-zinc-950">
       <main className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -21,9 +23,15 @@ export default function Home() {
 
         <dl className="mt-8 space-y-3 text-sm">
           <div className="flex justify-between gap-4 border-b border-zinc-100 pb-3 dark:border-zinc-800">
-            <dt className="text-zinc-500">Route</dt>
-            <dd className="font-medium text-zinc-900 dark:text-zinc-100">
-              {ORIGIN} → {DESTINATION}
+            <dt className="shrink-0 text-zinc-500">Origin</dt>
+            <dd className="text-right font-medium text-zinc-900 dark:text-zinc-100">
+              {ORIGIN}
+            </dd>
+          </div>
+          <div className="flex justify-between gap-4 border-b border-zinc-100 pb-3 dark:border-zinc-800">
+            <dt className="shrink-0 text-zinc-500">Destinations</dt>
+            <dd className="text-right font-medium text-zinc-900 dark:text-zinc-100">
+              {destLabel}
             </dd>
           </div>
           <div className="flex justify-between gap-4 border-b border-zinc-100 pb-3 dark:border-zinc-800">

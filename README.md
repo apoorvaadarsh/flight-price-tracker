@@ -1,15 +1,16 @@
-# Flight Price Tracker (BLR → PAT)
+# Flight Price Tracker (BLR → multiple cities)
 
-Next.js app for Vercel that runs a **daily cron** job, fetches cheapest-day fares from EaseMyTrip’s FareCalendar for **BLR** → **PAT** across a hardcoded date range, and sends an email via [Resend](https://resend.com/) when any day is at or below your hardcoded max price.
+Next.js app for Vercel that runs a **daily cron** job, fetches cheapest-day fares from EaseMyTrip’s FareCalendar for **BLR** → a list of destinations across a hardcoded date range, and sends an email via [Resend](https://resend.com/) when any day is at or below your max price.
 
 ## Configure the search
 
 Edit [`src/lib/config.ts`](src/lib/config.ts):
 
 - `DEPART_DATE_START` / `DEPART_DATE_END` — inclusive departure dates (`YYYY-MM-DD`)
-- `ORIGIN` / `DESTINATION` — IATA codes (default BLR / PAT)
+- `ORIGIN` — IATA origin (default `BLR`)
+- `DESTINATIONS` — list of `{ code, name }` (default: DEL, HDO, JAI, AGR, GWL)
 
-Each FareCalendar call returns roughly a month of prices (anchor date −4 through +24). Short ranges usually need one request per cron run.
+Each FareCalendar call returns roughly a month of prices (anchor date −4 through +24). Short ranges usually need one request per destination per cron run.
 
 ## Environment variables
 
