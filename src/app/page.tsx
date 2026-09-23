@@ -15,8 +15,8 @@ export default function Home() {
           Flight price tracker
         </h1>
         <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          A daily Vercel cron checks Amadeus for cheap flights and emails you
-          when a match is found.
+          A daily Vercel cron checks EaseMyTrip FareCalendar for cheap flights
+          and emails you when a match is found.
         </p>
 
         <dl className="mt-8 space-y-3 text-sm">

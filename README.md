@@ -1,6 +1,6 @@
 # Flight Price Tracker (BLR → PAT)
 
-Next.js app for Vercel that runs a **daily cron** job, searches [Amadeus Flight Offers](https://developers.amadeus.com/) for flights from **BLR** to **PAT** across a hardcoded date range, and sends an email via [Resend](https://resend.com/) when any offer is at or below your hardcoded max price.
+Next.js app for Vercel that runs a **daily cron** job, fetches cheapest-day fares from EaseMyTrip’s FareCalendar for **BLR** → **PAT** across a hardcoded date range, and sends an email via [Resend](https://resend.com/) when any day is at or below your hardcoded max price.
 
 ## Configure the search
 
@@ -10,7 +10,7 @@ Edit [`src/lib/config.ts`](src/lib/config.ts):
 - `MAX_PRICE` — alert threshold in INR
 - `ORIGIN` / `DESTINATION` — IATA codes (default BLR / PAT)
 
-Keep the date range small to stay within Amadeus free-tier limits (one API call per day in the range per cron run).
+Each FareCalendar call returns roughly a month of prices (anchor date −4 through +24). Short ranges usually need one request per cron run.
 
 ## Environment variables
 
@@ -18,19 +18,12 @@ Copy [`.env.example`](.env.example) to `.env.local` and fill in:
 
 | Variable | Description |
 |----------|-------------|
-| `AMADEUS_CLIENT_ID` | Amadeus Self-Service API key |
-| `AMADEUS_CLIENT_SECRET` | Amadeus secret |
-| `AMADEUS_API_BASE` | Optional; default `https://test.api.amadeus.com`. Use `https://api.amadeus.com` in production. |
 | `RESEND_API_KEY` | Resend API key |
 | `FROM_EMAIL` | Sender (e.g. `onboarding@resend.dev` for testing, or a verified domain) |
 | `NOTIFY_EMAIL` | Your inbox |
 | `CRON_SECRET` | Random string; required to call `/api/cron` |
 
-### Amadeus
-
-1. Sign up at [Amadeus for Developers](https://developers.amadeus.com/).
-2. Create an app and copy **API Key** and **API Secret** (test environment works out of the box).
-3. Test data can be sparse for some routes; request production access when you need live BLR→PAT pricing.
+No EaseMyTrip API key is required; the cron fetches FareCalendar server-side.
 
 ### Resend
 
@@ -51,7 +44,7 @@ Trigger the job manually:
 curl -s -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron | jq
 ```
 
-To confirm email delivery, temporarily set a very high `MAX_PRICE` in `config.ts` so offers qualify, then run the curl again.
+To confirm email delivery, temporarily set a very high `MAX_PRICE` in `config.ts` so fares qualify, then run the curl again.
 
 ## Deploy on Vercel
 
@@ -70,5 +63,6 @@ Returns JSON with `matchCount`, `matches`, and `emailSent` (true when at least o
 
 ## Notes
 
-- If a cheap flight stays available, you may get one email per day until it disappears (no deduplication by design).
-- Failed searches for a single date are logged and skipped; other dates still run.
+- If a cheap day stays available, you may get one email per day until it disappears (no deduplication by design).
+- FareCalendar returns daily cheapest fares (airline + total), not individual flight times.
+- Failed calendar fetches for one anchor date are logged and skipped; other anchors still run.

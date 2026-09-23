@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Flight Price Tracker | BLR → PAT",
   description:
-    "Daily Amadeus price checks for BLR to PAT with email alerts via Resend.",
+    "Daily EaseMyTrip FareCalendar checks for BLR to PAT with email alerts via Resend.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

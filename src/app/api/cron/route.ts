@@ -1,4 +1,4 @@
-import { findMatches } from "@/lib/amadeus";
+import { findMatches } from "@/lib/easemytrip";
 import {
   CURRENCY,
   DEPART_DATE_END,

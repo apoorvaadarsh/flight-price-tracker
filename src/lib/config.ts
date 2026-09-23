@@ -5,10 +5,9 @@ export const DESTINATION = "PAT";
 export const DEPART_DATE_START = "2026-10-01";
 export const DEPART_DATE_END = "2026-10-07";
 
-/** Notify when offer grand total is at or below this amount. */
+/** Notify when cheapest-day fare is at or below this amount. */
 export const MAX_PRICE = 8000;
 export const CURRENCY = "INR";
-export const ADULTS = 1;
 
 export function getDepartureDates(): string[] {
   const dates: string[] = [];
