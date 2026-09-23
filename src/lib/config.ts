@@ -5,8 +5,20 @@ export const DESTINATION = "PAT";
 export const DEPART_DATE_START = "2026-10-01";
 export const DEPART_DATE_END = "2026-10-07";
 
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing environment variable: ${name}`);
+  }
+  return value;
+}
+
 /** Notify when cheapest-day fare is at or below this amount. */
-export const MAX_PRICE = 8000;
+export const MAX_PRICE = Number(requireEnv("MAX_PRICE"));
+if (!Number.isFinite(MAX_PRICE) || MAX_PRICE <= 0) {
+  throw new Error("MAX_PRICE must be a positive number");
+}
+
 export const CURRENCY = "INR";
 
 export function getDepartureDates(): string[] {

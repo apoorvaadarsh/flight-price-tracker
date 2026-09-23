@@ -7,7 +7,6 @@ Next.js app for Vercel that runs a **daily cron** job, fetches cheapest-day fare
 Edit [`src/lib/config.ts`](src/lib/config.ts):
 
 - `DEPART_DATE_START` / `DEPART_DATE_END` — inclusive departure dates (`YYYY-MM-DD`)
-- `MAX_PRICE` — alert threshold in INR
 - `ORIGIN` / `DESTINATION` — IATA codes (default BLR / PAT)
 
 Each FareCalendar call returns roughly a month of prices (anchor date −4 through +24). Short ranges usually need one request per cron run.
@@ -21,6 +20,7 @@ Copy [`.env.example`](.env.example) to `.env.local` and fill in:
 | `RESEND_API_KEY` | Resend API key |
 | `FROM_EMAIL` | Sender (e.g. `onboarding@resend.dev` for testing, or a verified domain) |
 | `NOTIFY_EMAIL` | Your inbox |
+| `MAX_PRICE` | Alert threshold in INR |
 | `CRON_SECRET` | Random string; required to call `/api/cron` |
 
 No EaseMyTrip API key is required; the cron fetches FareCalendar server-side.
@@ -44,7 +44,7 @@ Trigger the job manually:
 curl -s -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron | jq
 ```
 
-To confirm email delivery, temporarily set a very high `MAX_PRICE` in `config.ts` so fares qualify, then run the curl again.
+To confirm email delivery, temporarily set a very high `MAX_PRICE` in `.env.local` so fares qualify, then run the curl again.
 
 ## Deploy on Vercel
 
