@@ -4,6 +4,7 @@ import {
   DEPART_DATE_END,
   DEPART_DATE_START,
   DESTINATIONS,
+  DRY_RUN,
   MAX_PRICE,
   ORIGIN,
 } from "@/lib/config";
@@ -32,17 +33,17 @@ export async function GET(request: NextRequest) {
     let emailSent = false;
 
     if (matches.length > 0) {
-      await sendMatchEmail(matches);
-      emailSent = true;
+      emailSent = await sendMatchEmail(matches);
     }
 
     return NextResponse.json({
       ok: true,
       origin: ORIGIN,
-      destinations: DESTINATIONS,
+      destinations: DESTINATIONS.map((d) => d.code),
       dateRange: { start: DEPART_DATE_START, end: DEPART_DATE_END },
       maxPrice: MAX_PRICE,
       currency: CURRENCY,
+      dryRun: DRY_RUN,
       matchCount: matches.length,
       emailSent,
       matches,

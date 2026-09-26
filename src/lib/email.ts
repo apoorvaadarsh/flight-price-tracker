@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { MAX_PRICE, ORIGIN } from "./config";
+import { DRY_RUN, MAX_PRICE, NOTIFY_EMAILS, ORIGIN } from "./config";
 import type { FlightMatch } from "./easemytrip";
 
 function requireEnv(name: string): string {
@@ -18,20 +18,35 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;");
 }
 
+function formatDestination(match: FlightMatch): string {
+  return match.destinationName === match.destination
+    ? match.destination
+    : `${match.destinationName} (${match.destination})`;
+}
+
 function formatMatchRow(match: FlightMatch): string {
-  const destLabel = `${match.destinationName} (${match.destination})`;
   return `<tr>
-    <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(destLabel)}</td>
+    <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(formatDestination(match))}</td>
     <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(match.date)}</td>
     <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(match.airline)}</td>
     <td style="padding:8px;border:1px solid #ddd;">${match.price.toLocaleString("en-IN")} ${escapeHtml(match.currency)}</td>
   </tr>`;
 }
 
-export async function sendMatchEmail(matches: FlightMatch[]): Promise<void> {
+/**
+ * Sends alert email, or skips when DRY_RUN is enabled.
+ * @returns true if an email was sent
+ */
+export async function sendMatchEmail(matches: FlightMatch[]): Promise<boolean> {
+  if (DRY_RUN) {
+    console.log(
+      `DRY_RUN=true: skipping email to [${NOTIFY_EMAILS.join(", ")}] for ${matches.length} match(es)`,
+    );
+    return false;
+  }
+
   const resend = new Resend(requireEnv("RESEND_API_KEY"));
   const from = requireEnv("FROM_EMAIL");
-  const to = requireEnv("NOTIFY_EMAIL");
 
   const destCodes = [...new Set(matches.map((m) => m.destination))].join(", ");
   const rows = matches.map(formatMatchRow).join("");
@@ -54,7 +69,7 @@ export async function sendMatchEmail(matches: FlightMatch[]): Promise<void> {
 
   const { error } = await resend.emails.send({
     from,
-    to,
+    to: NOTIFY_EMAILS,
     subject,
     html,
   });
@@ -62,4 +77,6 @@ export async function sendMatchEmail(matches: FlightMatch[]): Promise<void> {
   if (error) {
     throw new Error(`Resend failed: ${error.message}`);
   }
+
+  return true;
 }

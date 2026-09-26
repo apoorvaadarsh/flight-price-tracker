@@ -3,12 +3,13 @@ import {
   DEPART_DATE_END,
   DEPART_DATE_START,
   DESTINATIONS,
+  DRY_RUN,
   MAX_PRICE,
   ORIGIN,
 } from "@/lib/config";
 
 export default function Home() {
-  const destLabel = DESTINATIONS.map((d) => `${d.code} (${d.name})`).join(", ");
+  const destLabel = DESTINATIONS.map((d) => d.code).join(", ");
 
   return (
     <div className="flex min-h-full flex-col items-center justify-center bg-zinc-50 px-6 py-16 font-sans dark:bg-zinc-950">
@@ -46,6 +47,12 @@ export default function Home() {
               {MAX_PRICE.toLocaleString("en-IN")} {CURRENCY}
             </dd>
           </div>
+          <div className="flex justify-between gap-4 border-b border-zinc-100 pb-3 dark:border-zinc-800">
+            <dt className="text-zinc-500">Dry run</dt>
+            <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+              {DRY_RUN ? "on (no email)" : "off"}
+            </dd>
+          </div>
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-500">Schedule</dt>
             <dd className="font-medium text-zinc-900 dark:text-zinc-100">
@@ -55,11 +62,11 @@ export default function Home() {
         </dl>
 
         <p className="mt-8 text-xs text-zinc-500">
-          Edit hardcoded values in{" "}
+          Configure trip and alert settings via environment variables (see{" "}
           <code className="rounded bg-zinc-100 px-1 py-0.5 dark:bg-zinc-800">
-            src/lib/config.ts
+            README.md
           </code>
-          . Manual run:{" "}
+          ). Manual run:{" "}
           <code className="rounded bg-zinc-100 px-1 py-0.5 dark:bg-zinc-800">
             GET /api/cron
           </code>{" "}
